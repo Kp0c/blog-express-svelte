@@ -1,5 +1,24 @@
 <script>
   import {Button, Input, Spinner} from "flowbite-svelte";
+  import { config } from '../configs/config.js';
+  import {onMount} from "svelte";
+  import {showAlert} from "./stores/alerts.store.js";
+
+  async function loadPosts() {
+    try {
+      const postsResponse = await fetch(config.backend_url + '/feed/2posts');
+      const posts = await postsResponse.json();
+
+      console.log(posts);
+    } catch (error) {
+      showAlert('error', 'Error loading posts');
+      console.error(error);
+    }
+  }
+
+  onMount(() => {
+    loadPosts();
+  });
 </script>
 
 <div class="flex justify-center mt-10">

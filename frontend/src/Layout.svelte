@@ -1,6 +1,7 @@
 <script>
   import './app.css';
   import {Navbar, NavBrand, NavHamburger, NavLi, NavUl} from "flowbite-svelte";
+  import Alerts from "./lib/components/Alerts.svelte";
 </script>
 
 <Navbar let:hidden let:toggle class="bg-green-200">
@@ -17,3 +18,7 @@
 </Navbar>
 
 <slot />
+
+<div class="absolute right-4 bottom-4" >
+    <Alerts />
+</div>
