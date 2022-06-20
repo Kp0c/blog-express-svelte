@@ -6,7 +6,12 @@
 
   async function loadPosts() {
     try {
-      const postsResponse = await fetch(config.backend_url + '/feed/2posts');
+      const postsResponse = await fetch(config.backend_url + '/feed/posts');
+
+      if (postsResponse.status !== 200) {
+        throw new Error('Error loading posts');
+      }
+
       const posts = await postsResponse.json();
 
       console.log(posts);
