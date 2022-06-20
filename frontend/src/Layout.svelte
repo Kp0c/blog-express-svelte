@@ -1,6 +1,6 @@
 <script>
-	import '../app.css';
-    import {Navbar, NavBrand, NavHamburger, NavLi, NavUl} from "flowbite-svelte";
+  import './app.css';
+  import {Navbar, NavBrand, NavHamburger, NavLi, NavUl} from "flowbite-svelte";
 </script>
 
 <Navbar let:hidden let:toggle class="bg-green-200">
