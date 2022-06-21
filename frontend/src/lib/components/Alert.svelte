@@ -3,8 +3,14 @@
   import {onDestroy, onMount} from "svelte";
   import {removeAlert} from "../stores/alerts.store.js";
 
-  export let color = 'green'
+  export let type = 'success';
   export let id;
+
+  $: color = type === 'success'
+    ? 'green'
+    : type === 'error'
+    ? 'red'
+    : 'blue';
 
   const TIMEOUT = 5000; // 5 seconds
   let timeout;

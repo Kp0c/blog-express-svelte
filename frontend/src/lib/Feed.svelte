@@ -3,6 +3,8 @@
   import { config } from '../configs/config.js';
   import {onMount} from "svelte";
   import {showAlert} from "./stores/alerts.store.js";
+  import NewPost from "./modals/NewPost.svelte";
+  import {openModal} from "svelte-modals";
 
   async function loadPosts() {
     try {
@@ -19,6 +21,10 @@
       showAlert('error', 'Error loading posts');
       console.error(error);
     }
+  }
+
+  function newPost() {
+    openModal(NewPost);
   }
 
   onMount(() => {
@@ -43,6 +49,7 @@
             <Button
                     size="sm:text-md"
                     color="primary"
+                    on:click={newPost}
                     variant="contained">New Post</Button>
         </div>
         <div class="text-center">
