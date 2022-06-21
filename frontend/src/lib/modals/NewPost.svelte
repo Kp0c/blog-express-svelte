@@ -99,10 +99,14 @@
             {/if}
 
             <div
-                class="flex justify-end mt-2"
+                class="flex justify-between mt-2"
             >
                 <Button
-                    color="primary"
+                    on:click={closeModal}
+                >
+                    Cancel
+                </Button>
+                <Button
                     on:click={save}
                 >Save</Button>
             </div>
