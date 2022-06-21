@@ -1,11 +1,17 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 
 const feedRoutes = require('./routes/feed');
+const dotenv = require("dotenv");
+const path = require("path");
 
 const app = express();
 
+dotenv.config();
+
 app.use(bodyParser.json());
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 // set CORS
 app.use((req, res, next) => {
@@ -17,5 +23,19 @@ app.use((req, res, next) => {
 
 app.use('/feed', feedRoutes);
 
-app.listen(8080);
+app.use((req, res, next, err) => {
+  console.error(err);
+  res.status(500).json({
+    message: err.message,
+  });
+});
 
+async function start() {
+  await mongoose.connect(process.env.MONGODB_URL);
+
+  app.listen(8080);
+}
+
+start()
+  .then(r => console.log('Server started'))
+  .catch(err => console.log(err));
