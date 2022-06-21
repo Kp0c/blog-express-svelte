@@ -2,6 +2,8 @@
     import type { Post } from "../models/Post";
     import Button from "./form/Button.svelte";
     import { push } from "svelte-spa-router";
+    import { openModal } from "svelte-modals";
+    import EditPost from "../modals/EditPost.svelte";
 
     export let post: Post;
 
@@ -9,6 +11,10 @@
 
     function viewPost(): void {
         push('/feed/posts/' + post._id);
+    }
+
+    function editPost(): void {
+        openModal(EditPost, { post });
     }
 </script>
 
@@ -29,7 +35,7 @@
         class="flex justify-end gap-2"
     >
         <Button on:click={viewPost}>View</Button>
-        <Button>Edit</Button>
+        <Button on:click={editPost}>Edit</Button>
         <Button type="outline" color="danger">Delete</Button>
     </div>
 

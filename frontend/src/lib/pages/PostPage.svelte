@@ -13,7 +13,7 @@
   $: postId = params?.postId ?? null
 
   $: formattedDate = post ? new Date(post.createdAt).toLocaleDateString() : 'Unknown';
-  $: imageSrc = config.backend_url + post?.imageUrl ?? '';
+  $: imageSrc = config.backend_url + '/' + post?.imageUrl ?? '';
 
   async function loadPost() {
       isLoading = true;

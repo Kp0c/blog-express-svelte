@@ -2,16 +2,16 @@
   import { config } from '../../configs/config.js';
   import {onMount} from "svelte";
   import {showAlert} from "../stores/alerts.store.js";
-  import NewPost from "../modals/NewPost.svelte";
+  import NewPost from "../modals/EditPost.svelte";
   import {openModal} from "svelte-modals";
   import Input from "../components/form/Input.svelte";
   import Button from "../components/form/Button.svelte";
   import Spinner from "../components/form/Spinner.svelte";
   import Post from "../components/Post.svelte";
-  import type { Post as PostModel } from "../models/Post";
+  import { setPosts } from "../stores/posts.store";
+  import { posts } from "../stores/posts.store";
 
   let isLoading = false;
-  let posts: PostModel[] = [];
 
   async function loadPosts() {
     isLoading = true;
@@ -22,9 +22,9 @@
         throw new Error('Error loading posts');
       }
 
-      const postsObh = await postsResponse.json();
+      const postsObj = await postsResponse.json();
 
-      posts = postsObh['posts'];
+      setPosts(postsObj.posts);
     } catch (error) {
       showAlert('error', 'Error loading posts');
       console.error(error);
@@ -60,7 +60,7 @@
                 <Spinner />
             </div>
         {/if}
-        {#each posts as post}
+        {#each $posts as post}
             <Post {post}/>
         {/each}
     </div>

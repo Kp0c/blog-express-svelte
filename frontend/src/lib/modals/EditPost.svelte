@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import Input from "../components/form/Input.svelte";
     import TextArea from "../components/form/TextArea.svelte";
     import {closeModal} from "svelte-modals";
@@ -6,8 +6,15 @@
     import {showAlert} from "../stores/alerts.store.js";
     import {config} from "../../configs/config.js";
     import Button from "../components/form/Button.svelte";
+    import { addPost, replacePost } from "../stores/posts.store";
+    import {onMount} from "svelte";
+    import type { Post } from "../models/Post";
 
-    export let isOpen;
+    export let isOpen: boolean;
+
+    export let post: Post;
+
+    $: isEditing = !!post?._id;
 
     let title = '';
     let content = '';
@@ -16,33 +23,38 @@
     $: imageSrc = image ? URL.createObjectURL(image) : '';
 
     async function save() {
-      if (!validate()) {
-        return;
-      }
-
-      try {
-        const response = await fetch(config.backend_url + '/feed/posts', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            title,
-            content
-          })
-        });
-
-        const data = await response.json();
-
-        if (response.status === 201) {
-          showAlert('success', data.message);
-          closeModal();
-        } else {
-          showAlert('error', data.message);
+        if (!validate()) {
+            return;
         }
-      } catch (err) {
-        showAlert('error', 'Error during saving post. Please try again.');
-      }
+
+        try {
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('content', content);
+            formData.append('image', image);
+
+            const url = isEditing ? `${ config.backend_url }/feed/posts/${ post._id }` : `${ config.backend_url }/feed/posts`;
+            const response = await fetch(url, {
+                method: isEditing ? 'PUT' : 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if ([200, 201].includes(response.status)) {
+                if (isEditing) {
+                    replacePost(data.post);
+                } else {
+                    addPost(data.post);
+                }
+                showAlert('success', data.message);
+                closeModal();
+            } else {
+                showAlert('error', data.message);
+            }
+        } catch (err) {
+            showAlert('error', 'Error during saving post. Please try again.');
+        }
     }
 
     function validate() {
@@ -56,13 +68,21 @@
             return false;
         }
 
-        if (!image) {
+        if (!isEditing && !image) {
             showAlert('error', 'Image is required.');
             return false;
         }
 
         return true;
     }
+
+    onMount(() => {
+      if (post) {
+        title = post.title;
+        content = post.content;
+      }
+        console.log(title, content)
+    })
 </script>
 
 {#if isOpen}

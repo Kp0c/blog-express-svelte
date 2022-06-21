@@ -26,6 +26,7 @@
     <input
             type="{type}"
             id="{id}"
+            value="{value}"
             on:input={handleInput}
             placeholder="{placeholder}"
             class="w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg"
