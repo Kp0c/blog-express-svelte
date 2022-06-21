@@ -1,3 +1,4 @@
+const {validationResult} = require("express-validator");
 exports.getPosts = (req, res) => {
   res.status(200).json({
     posts: [
@@ -16,6 +17,14 @@ exports.getPosts = (req, res) => {
 }
 
 exports.postPost = (req, res) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(422).json({
+      message: errors.array().map(error => error.msg).join(', '),
+    });
+  }
+
   const title = req.body.title;
   const body = req.body.body;
 
