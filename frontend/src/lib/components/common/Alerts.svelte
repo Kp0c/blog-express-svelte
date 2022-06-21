@@ -1,5 +1,5 @@
 <script>
-    import {alerts} from '../stores/alerts.store.js';
+    import {alerts} from '../../stores/alerts.store.js';
     import Alert from "./Alert.svelte";
 
 </script>

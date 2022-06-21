@@ -1,11 +1,11 @@
 <script>
-    import Input from "../components/Input.svelte";
-    import TextArea from "../components/TextArea.svelte";
-    import {Button} from "flowbite-svelte";
+    import Input from "../components/form/Input.svelte";
+    import TextArea from "../components/form/TextArea.svelte";
     import {closeModal} from "svelte-modals";
-    import FileInput from "../components/FileInput.svelte";
+    import FileInput from "../components/form/FileInput.svelte";
     import {showAlert} from "../stores/alerts.store.js";
     import {config} from "../../configs/config.js";
+    import Button from "../components/form/Button.svelte";
 
     export let isOpen;
 

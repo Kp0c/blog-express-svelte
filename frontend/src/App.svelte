@@ -1,13 +1,24 @@
 <script>
-  import Layout from "./Layout.svelte";
-  import Feed from "./lib/Feed.svelte";
-  import Alerts from "./lib/components/Alerts.svelte";
+  import Router, { link } from 'svelte-spa-router';
+  import Alerts from "./lib/components/common/Alerts.svelte";
   import {closeModal, Modals} from "svelte-modals";
+  import {routes} from "./routes";
 </script>
 
-<Layout>
-  <Feed/>
-</Layout>
+<nav class="flex items-center justify-between flex-wrap bg-blue-500 p-3">
+    <div class="flex items-center flex-shrink-0 text-white mr-6 text-xl">
+        <a href="/">Express + Svelte blog</a>
+    </div>
+    <ul class="flex items-center flex-shrink-0 text-white mr-6">
+        <li class="mr-3">
+            <a href="/" use:link>Feed</a>
+        </li>
+<!--        <li class="mr-3">-->
+<!--            <a href="/feed" use:link>Logout</a>-->
+<!--        </li>-->
+    </ul>
+</nav>
+<Router {routes} />
 
 <div class="absolute right-4 bottom-4 z-20">
     <Alerts/>

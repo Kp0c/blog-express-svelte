@@ -14,7 +14,7 @@
     };
 </script>
 
-<div class="flex flex-col">
+<div class="flex flex-col w-full">
     {#if label}
         <label
                 class="text-md font-semibold text-gray-600"
