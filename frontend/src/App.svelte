@@ -4,8 +4,10 @@
   import {closeModal, Modals} from "svelte-modals";
   import {routes} from "./routes";
   import { dropToken, token } from "./lib/stores/auth-token.store";
+  import { clearPosts } from "./lib/stores/posts.store";
 
   function logout(): void {
+    clearPosts();
     dropToken();
   }
 </script>

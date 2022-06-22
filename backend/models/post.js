@@ -15,10 +15,8 @@ const postSchema = new Schema({
     required: true,
   },
   creator: {
-    type: Object,
-    // TODO: create user schema
-    // type: mongoose.Schema.Types.ObjectId,
-    // ref: 'User',
+    type: Schema.Types.ObjectId,
+    ref: 'User',
     required: true,
   }
 }, {

@@ -4,7 +4,6 @@
   import { showAlert } from "../stores/alerts.store.js";
   import NewPost from "../modals/EditPost.svelte";
   import { openModal } from "svelte-modals";
-  import Input from "../components/form/Input.svelte";
   import Button from "../components/form/Button.svelte";
   import Spinner from "../components/form/Spinner.svelte";
   import Post from "../components/Post.svelte";
@@ -13,6 +12,7 @@
   import { get } from "svelte/store";
   import { token } from "../stores/auth-token.store";
   import { push } from "svelte-spa-router";
+  import Status from "../components/Status.svelte";
 
   let isLoading = false;
   let page = 1;
@@ -63,15 +63,7 @@
 
 <div class="flex justify-center mt-10">
   <div class="w-2/3 flex justify-center flex-col">
-    <div class="flex mb-6">
-      <Input
-        placeholder="Your status"
-        size="sm:text-md"
-      />
-      <div class="ml-2">
-        <Button>Update</Button>
-      </div>
-    </div>
+    <Status/>
     <div class="text-center mb-6">
       <Button on:click={newPost}>New Post</Button>
     </div>
@@ -83,6 +75,11 @@
     {#each $posts as post}
       <Post {post}/>
     {/each}
+    {#if $posts.length === 0 && !isLoading}
+      <div class="text-center">
+        <p class="text-gray-600">No posts yet</p>
+      </div>
+    {/if}
     <Pagination bind:page bind:totalPages on:pageChanged={changePage}/>
   </div>
 </div>

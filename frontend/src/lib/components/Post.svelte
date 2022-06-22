@@ -9,10 +9,12 @@
   import { deletePost as deletePostFromStore } from "../stores/posts.store";
   import { get } from "svelte/store";
   import { token } from "../stores/auth-token.store";
+  import jwtDecode from "jwt-decode";
 
   export let post: Post;
 
   $: formattedDate = post ? new Date(post.createdAt).toLocaleDateString() : 'Unknown';
+  $: isMyPost = post ? post.creator._id === jwtDecode(get(token)).userId : false;
 
   function viewPost(): void {
     push('/feed/posts/' + post._id);
@@ -24,14 +26,14 @@
 
   async function deletePost(): Promise<void> {
     try {
-      const responst = await fetch(config.backend_url + '/feed/posts/' + post._id, {
+      const response = await fetch(config.backend_url + '/feed/posts/' + post._id, {
         method: 'DELETE',
         headers: {
           'Authorization': 'Bearer ' + get(token)
         }
       });
 
-      if (responst.status === 200) {
+      if (response.status === 200) {
         deletePostFromStore(post._id);
         showAlert('success', 'Post deleted successfully');
       } else {
@@ -61,8 +63,10 @@
     class="flex justify-end gap-2"
   >
     <Button on:click={viewPost}>View</Button>
-    <Button on:click={editPost}>Edit</Button>
-    <Button color="danger" on:click={deletePost} type="outline">Delete</Button>
+    {#if isMyPost}
+      <Button on:click={editPost}>Edit</Button>
+      <Button color="danger" on:click={deletePost} type="outline">Delete</Button>
+    {/if}
   </div>
 
 </div>

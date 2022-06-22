@@ -20,3 +20,7 @@ export function replacePost(updatedPost: Post): void {
 export function deletePost(postId: string): void {
   posts.update(posts => posts.filter(post => post._id !== postId));
 }
+
+export function clearPosts(): void {
+  posts.set([]);
+}

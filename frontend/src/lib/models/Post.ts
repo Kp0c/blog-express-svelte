@@ -4,6 +4,7 @@ export interface Post {
   content: string;
   imageUrl: string;
   creator: {
+    _id: string;
     name: string;
   };
   createdAt: Date;
