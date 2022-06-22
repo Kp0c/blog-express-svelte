@@ -16,3 +16,7 @@ export function addPost(post: Post): void {
 export function replacePost(updatedPost: Post): void {
     posts.update(posts => posts.map(post => post._id === updatedPost._id ? updatedPost : post));
 }
+
+export function deletePost(postId: string): void {
+    posts.update(posts => posts.filter(post => post._id !== postId));
+}

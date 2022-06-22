@@ -4,6 +4,9 @@
     import { push } from "svelte-spa-router";
     import { openModal } from "svelte-modals";
     import EditPost from "../modals/EditPost.svelte";
+    import { showAlert } from "../stores/alerts.store";
+    import { config } from "../../configs/config";
+    import { deletePost as deletePostFromStore } from "../stores/posts.store";
 
     export let post: Post;
 
@@ -15,6 +18,24 @@
 
     function editPost(): void {
         openModal(EditPost, { post });
+    }
+
+    async function deletePost(): Promise<void> {
+        try {
+            const responst = await fetch(config.backend_url + '/feed/posts/' + post._id, {
+                method: 'DELETE',
+            });
+
+            if (responst.status === 200) {
+                deletePostFromStore(post._id);
+                showAlert('success', 'Post deleted successfully');
+            } else {
+                showAlert('error', 'Error deleting post');
+            }
+        } catch (e) {
+            showAlert('error', 'Error deleting post');
+            console.error(e);
+        }
     }
 </script>
 
@@ -36,7 +57,7 @@
     >
         <Button on:click={viewPost}>View</Button>
         <Button on:click={editPost}>Edit</Button>
-        <Button type="outline" color="danger">Delete</Button>
+        <Button type="outline" color="danger" on:click={deletePost}>Delete</Button>
     </div>
 
 </div>
