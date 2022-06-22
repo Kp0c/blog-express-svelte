@@ -86,7 +86,6 @@
       title = post.title;
       content = post.content;
     }
-    console.log(title, content)
   })
 </script>
 

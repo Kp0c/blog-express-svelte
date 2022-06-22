@@ -27,7 +27,6 @@
 
       if (res.status === 200) {
         setToken(data.token);
-        console.log(data);
         await replace('/');
       } else {
         showAlert('error', data.message);
