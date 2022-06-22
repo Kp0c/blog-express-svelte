@@ -2,13 +2,22 @@ const {validationResult} = require("express-validator");
 const Post = require('../models/post');
 const {deleteFile} = require("../util/file");
 
+const ITEMS_PER_PAGE = 5;
+
 exports.getPosts = async (req, res, next) => {
   try {
-    const posts = await Post.find();
+    const page = req.query['page'] || 1;
+    const posts = await Post.find()
+      .skip((page - 1) * ITEMS_PER_PAGE)
+      .limit(ITEMS_PER_PAGE);
+
+    const totalItems = await Post.countDocuments();
+    const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
 
     res.status(200).json({
       message: 'Posts fetched successfully',
-      posts
+      posts,
+      totalPages
     });
   } catch (err) {
     next(err);

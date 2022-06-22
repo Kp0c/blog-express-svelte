@@ -10,13 +10,16 @@
   import Post from "../components/Post.svelte";
   import { setPosts } from "../stores/posts.store";
   import { posts } from "../stores/posts.store";
+  import Pagination from "../components/Pagination.svelte";
 
   let isLoading = false;
+  let page = 1;
+  let totalPages = 1;
 
   async function loadPosts() {
     isLoading = true;
     try {
-      const postsResponse = await fetch(config.backend_url + '/feed/posts');
+      const postsResponse = await fetch(config.backend_url + '/feed/posts?page=' + page);
 
       if (postsResponse.status !== 200) {
         throw new Error('Error loading posts');
@@ -24,7 +27,8 @@
 
       const postsObj = await postsResponse.json();
 
-      setPosts(postsObj.posts);
+      setPosts(postsObj['posts']);
+      totalPages = postsObj['totalPages'];
     } catch (error) {
       showAlert('error', 'Error loading posts');
       console.error(error);
@@ -34,6 +38,11 @@
 
   function newPost() {
     openModal(NewPost);
+  }
+
+  function changePage(newPage: CustomEvent) {
+      page = newPage.detail.page;
+      loadPosts();
   }
 
   onMount(() => {
@@ -63,5 +72,6 @@
         {#each $posts as post}
             <Post {post}/>
         {/each}
+        <Pagination bind:page bind:totalPages on:pageChanged={changePage}/>
     </div>
 </div>
