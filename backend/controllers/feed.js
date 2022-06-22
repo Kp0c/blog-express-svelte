@@ -105,3 +105,24 @@ exports.putPost = async (req, res, next) => {
     next(err);
   }
 }
+
+exports.deletePost = async (req, res, next) => {
+  try {
+    const post = await Post.findById(req.params['postId']);
+
+    if (!post) {
+      return res.status(404).json({
+        message: 'Post not found',
+      });
+    }
+
+    deleteFile(post.imageUrl).catch(err => console.error(err));
+    await Post.deleteOne({_id: req.params['postId']});
+
+    res.status(200).json({
+      message: 'Post deleted successfully',
+    });
+  } catch (err) {
+    next(err);
+  }
+}
