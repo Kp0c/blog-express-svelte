@@ -1,8 +1,11 @@
 const express = require('express');
 const feedController = require('../controllers/feed');
 const {body} = require("express-validator");
+const isAuth = require('../middlewares/is-auth');
 
 const router = express.Router();
+
+router.use(isAuth);
 
 const postValidation = [
   body('title').trim().notEmpty().withMessage('Title is required'),

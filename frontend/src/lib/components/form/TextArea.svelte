@@ -6,18 +6,18 @@
 </script>
 
 <div class="flex flex-col">
-    {#if label}
-        <label
-                class="text-md font-semibold text-gray-600"
-                for="{id}"
-        >
-            {label}
-        </label>
-    {/if}
-    <textarea
-            id="{id}"
-            placeholder="{placeholder}"
-            bind:value
-            class="w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg"
-    ></textarea>
+  {#if label}
+    <label
+      class="text-md font-semibold text-gray-600"
+      for="{id}"
+    >
+      {label}
+    </label>
+  {/if}
+  <textarea
+    bind:value
+    class="w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg"
+    id="{id}"
+    placeholder="{placeholder}"
+  ></textarea>
 </div>

@@ -1,4 +1,4 @@
-import {writable} from "svelte/store";
+import { writable } from "svelte/store";
 import type { Post } from "../models/Post";
 
 const initialState: Post[] = [];
@@ -6,17 +6,17 @@ const initialState: Post[] = [];
 export const posts = writable(initialState);
 
 export function setPosts(newPosts: Post[]): void {
-    posts.set(newPosts);
+  posts.set(newPosts);
 }
 
 export function addPost(post: Post): void {
-    posts.update(posts => [...posts, post]);
+  posts.update(posts => [...posts, post]);
 }
 
 export function replacePost(updatedPost: Post): void {
-    posts.update(posts => posts.map(post => post._id === updatedPost._id ? updatedPost : post));
+  posts.update(posts => posts.map(post => post._id === updatedPost._id ? updatedPost : post));
 }
 
 export function deletePost(postId: string): void {
-    posts.update(posts => posts.filter(post => post._id !== postId));
+  posts.update(posts => posts.filter(post => post._id !== postId));
 }

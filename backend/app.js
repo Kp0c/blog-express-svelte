@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
 const feedRoutes = require('./routes/feed');
+const authRoutes = require('./routes/auth');
 const dotenv = require("dotenv");
 const path = require("path");
 const multer = require('multer');
@@ -41,6 +42,7 @@ app.use((req, res, next) => {
 });
 
 app.use('/feed', feedRoutes);
+app.use('/auth', authRoutes);
 
 app.use((req, res, next, err) => {
   console.error(err);
