@@ -22,6 +22,7 @@
   let image;
 
   $: imageSrc = image ? URL.createObjectURL(image) : '';
+  $: title = isEditing ? 'Edit Post' : 'New Post';
 
   async function save() {
     if (!validate()) {
@@ -91,7 +92,7 @@
     <div
       class="bg-white rounded-lg p-4 shadow-xl"
     >
-      <h2 class="text-xl font-bold">New Post</h2>
+      <h2 class="text-xl font-bold">{ title }</h2>
       <hr>
       <Input
         type="text"
