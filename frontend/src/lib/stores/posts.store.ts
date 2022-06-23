@@ -10,7 +10,7 @@ export function setPosts(newPosts: Post[]): void {
 }
 
 export function addPost(post: Post): void {
-  posts.update(posts => [...posts, post]);
+  posts.update(posts => [post, ...posts]);
 }
 
 export function replacePost(updatedPost: Post): void {

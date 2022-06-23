@@ -6,7 +6,6 @@
   import { showAlert } from "../stores/alerts.store.js";
   import { config } from "../../configs/config.js";
   import Button from "../components/form/Button.svelte";
-  import { addPost, replacePost } from "../stores/posts.store";
   import { onMount } from "svelte";
   import type { Post } from "../models/Post";
   import { get } from "svelte/store";
@@ -47,11 +46,6 @@
       const data = await response.json();
 
       if ([200, 201].includes(response.status)) {
-        if (isEditing) {
-          replacePost(data.post);
-        } else {
-          addPost(data.post);
-        }
         showAlert('success', data.message);
         closeModal();
       } else {

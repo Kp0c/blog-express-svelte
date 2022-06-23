@@ -6,7 +6,6 @@
   import EditPost from "../modals/EditPost.svelte";
   import { showAlert } from "../stores/alerts.store";
   import { config } from "../../configs/config";
-  import { deletePost as deletePostFromStore } from "../stores/posts.store";
   import { get } from "svelte/store";
   import { token } from "../stores/auth-token.store";
   import jwtDecode from "jwt-decode";
@@ -34,7 +33,6 @@
       });
 
       if (response.status === 200) {
-        deletePostFromStore(post._id);
         showAlert('success', 'Post deleted successfully');
       } else {
         showAlert('error', 'Error deleting post');

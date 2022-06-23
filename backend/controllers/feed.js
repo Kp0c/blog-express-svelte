@@ -1,6 +1,7 @@
 const {validationResult} = require("express-validator");
 const Post = require('../models/post');
 const User = require('../models/user');
+const socket = require('../util/socket');
 const {deleteFile} = require("../util/file");
 
 const ITEMS_PER_PAGE = 5;
@@ -11,6 +12,7 @@ exports.getPosts = async (req, res, next) => {
     const posts = await Post.find()
       .skip((page - 1) * ITEMS_PER_PAGE)
       .limit(ITEMS_PER_PAGE)
+      .sort({createdAt: -1})
       .populate('creator');
 
     const totalItems = await Post.countDocuments();
@@ -55,15 +57,21 @@ exports.postPost = async (req, res, next) => {
     user.posts.push(post);
     await user.save();
 
+    const postResponse = {
+      ...post._doc,
+      creator: {
+        _id: user._id,
+        name: user.name,
+      }
+    };
+
+    socket.getIO().emit('posts', {
+      action: 'create',
+      post: postResponse
+    });
+
     res.status(201).json({
       message: 'Post created successfully',
-      post: {
-        ...post._doc,
-        creator: {
-          _id: user._id,
-          name: user.name,
-        }
-      },
     });
   } catch (err) {
     next(err);
@@ -99,7 +107,7 @@ exports.putPost = async (req, res, next) => {
       });
     }
 
-    const post = await Post.findById(req.params['postId']);
+    const post = await Post.findById(req.params['postId']).populate('creator');
 
     if (!post) {
       return res.status(404).json({
@@ -123,9 +131,13 @@ exports.putPost = async (req, res, next) => {
 
     await post.save();
 
-    res.status(200).json({
-      message: 'Post updated successfully',
+    socket.getIO().emit('posts', {
+      action: 'update',
       post
+    });
+
+    res.status(200).json({
+      message: 'Post updated successfully'
     });
   } catch (err) {
     next(err);
@@ -156,6 +168,11 @@ exports.deletePost = async (req, res, next) => {
     user.posts.pull(req.params['postId']);
 
     await user.save();
+
+    socket.getIO().emit('posts', {
+      action: 'delete',
+      post
+    });
 
     res.status(200).json({
       message: 'Post deleted successfully',

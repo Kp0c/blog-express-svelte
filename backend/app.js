@@ -36,7 +36,7 @@ app.use('/data/images', express.static(path.join(__dirname, 'data/images')));
 // set CORS
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Authorization, Connection');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   next();
 });
@@ -54,7 +54,9 @@ app.use((req, res, next, err) => {
 async function start() {
   await mongoose.connect(process.env.MONGODB_URL);
 
-  app.listen(8080);
+  const server = app.listen(8080);
+
+  require('./util/socket').init(server);
 }
 
 start()
