@@ -13,25 +13,40 @@
 
   async function signup(): Promise<void> {
     try {
-      const res = await fetch(config.backend_url + '/auth/signup', {
-        method: 'PUT',
+      const graphqlQuery = `
+        mutation CreateUser($email: String!, $name: String!, $password: String!) {
+          createUser(user: {
+            email: $email,
+            name: $name,
+            password: $password
+          }) {
+            token
+          }
+        }
+      `;
+
+      const res = await fetch(config.backend_url + '/graphql', {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          email: email,
-          name: name,
-          password: password
+          query: graphqlQuery,
+          variables: {
+            email,
+            name,
+            password
+          }
         })
       });
 
-      const data = await res.json();
+      const responseData = await res.json();
 
-      if (res.status === 201) {
-        setToken(data.token);
+      if (res.status === 200) {
+        setToken(responseData.data.createUser.token);
         replace('/');
       } else {
-        showAlert('error', data.message);
+        showAlert('error', responseData.errors[0].message);
       }
     } catch (err) {
       console.error(err);

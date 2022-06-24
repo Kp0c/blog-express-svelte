@@ -8,11 +8,12 @@
   import { config } from "../../configs/config";
   import { get } from "svelte/store";
   import { token } from "../stores/auth-token.store";
+  import { deletePost as deletePostFromStore } from "../stores/posts.store";
   import jwtDecode from "jwt-decode";
 
   export let post: Post;
 
-  $: formattedDate = post ? new Date(post.createdAt).toLocaleDateString() : 'Unknown';
+  $: formattedDate = post ? new Date(+post.createdAt).toLocaleDateString() : 'Unknown';
   $: isMyPost = post ? post.creator._id === jwtDecode(get(token)).userId : false;
 
   function viewPost(): void {
@@ -25,14 +26,28 @@
 
   async function deletePost(): Promise<void> {
     try {
-      const response = await fetch(config.backend_url + '/feed/posts/' + post._id, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': 'Bearer ' + get(token)
+      const graphqlQuery = `
+        mutation DeletePost($id: ID!) {
+          deletePost(id: $id)
         }
+      `;
+
+      const response = await fetch(config.backend_url + '/graphql', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + get(token),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          query: graphqlQuery,
+          variables: {
+            id: post._id
+          }
+        })
       });
 
       if (response.status === 200) {
+        deletePostFromStore(post._id);
         showAlert('success', 'Post deleted successfully');
       } else {
         showAlert('error', 'Error deleting post');

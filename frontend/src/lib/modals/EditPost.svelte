@@ -10,6 +10,7 @@
   import type { Post } from "../models/Post";
   import { get } from "svelte/store";
   import { token } from "../stores/auth-token.store";
+  import { addPost, replacePost } from "../stores/posts.store";
 
   export let isOpen: boolean;
 
@@ -22,7 +23,7 @@
   let image;
 
   $: imageSrc = image ? URL.createObjectURL(image) : '';
-  $: title = isEditing ? 'Edit Post' : 'New Post';
+  $: windowTitle = isEditing ? 'Edit Post' : 'New Post';
 
   async function save() {
     if (!validate()) {
@@ -30,27 +31,82 @@
     }
 
     try {
-      const formData = new FormData();
-      formData.append('title', title);
-      formData.append('content', content);
-      formData.append('image', image);
+      let imageUrl = null;
+      if (image) {
+        const formData = new FormData();
+        formData.append('image', image);
 
-      const url = isEditing ? `${ config.backend_url }/feed/posts/${ post._id }` : `${ config.backend_url }/feed/posts`;
+        const fileUploadResponse = await fetch(config.backend_url + '/post-image', {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Authorization': `Bearer ${get(token)}`
+          }
+        });
+
+        if (fileUploadResponse.status !== 201) {
+          throw new Error('Error uploading image');
+        }
+
+        const fileUploadResponseJson = await fileUploadResponse.json();
+        imageUrl = fileUploadResponseJson.imageUrl;
+      }
+
+      const mutation = isEditing ? 'editPost' : 'createPost';
+      const idField = isEditing ? `$id: ID!,` : '';
+      const idFieldDeclaration = isEditing ? `id: $id` : '';
+      const graphqlQuery = `
+        mutation CreateEditPost(${idField} $title: String!, $content: String!, $imageUrl: String${isEditing ? '' : '!'}) {
+          ${mutation}(
+            ${idFieldDeclaration}
+            title: $title,
+            content: $content,
+            imageUrl: $imageUrl
+          ) {
+            _id
+            title
+            content
+            imageUrl
+            createdAt,
+            creator {
+              _id
+              name
+            }
+          }
+        }
+      `;
+
+      const url = `${ config.backend_url }/graphql`;
       const response = await fetch(url, {
-        method: isEditing ? 'PUT' : 'POST',
-        body: formData,
+        method: 'POST',
+        body: JSON.stringify({
+          query: graphqlQuery,
+          variables: {
+            id: post?._id ?? undefined,
+            title,
+            content,
+            imageUrl: imageUrl ?? ''
+          }
+        }),
         headers: {
-          'Authorization': 'Bearer ' + get(token)
+          'Authorization': 'Bearer ' + get(token),
+          'Content-Type': 'application/json'
         }
       });
 
-      const data = await response.json();
+      const responseJson = await response.json();
 
-      if ([200, 201].includes(response.status)) {
-        showAlert('success', data.message);
+      if (response.status === 200) {
+        showAlert('success', 'Post saved successfully');
+        const post = responseJson['data'][mutation];
+        if (isEditing) {
+          replacePost(post);
+        } else {
+          addPost(post);
+        }
         closeModal();
       } else {
-        showAlert('error', data.message);
+        showAlert('error', responseJson['data'].errors[0].message ?? 'Error saving post');
       }
     } catch (err) {
       showAlert('error', 'Error during saving post. Please try again.');
@@ -92,7 +148,7 @@
     <div
       class="bg-white rounded-lg p-4 shadow-xl"
     >
-      <h2 class="text-xl font-bold">{ title }</h2>
+      <h2 class="text-xl font-bold">{ windowTitle }</h2>
       <hr>
       <Input
         type="text"

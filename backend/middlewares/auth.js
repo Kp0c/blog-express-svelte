@@ -10,9 +10,7 @@ module.exports = async (req, res, next) => {
     const authorizationHeader = req.get('Authorization');
 
     if (!authorizationHeader) {
-      return res.status(401).json({
-        message: 'No token provided'
-      });
+      return next();
     }
 
     const token = authorizationHeader.replace('Bearer ', '');
@@ -21,7 +19,7 @@ module.exports = async (req, res, next) => {
     req.userId = decoded.userId;
     next();
   } catch (err) {
-    console.error(err);
-    res.status(401).json({ message: 'Unauthenticated' });
+    // Invalid user token
+    next();
   }
 }

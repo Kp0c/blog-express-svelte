@@ -2,11 +2,11 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
-const feedRoutes = require('./routes/feed');
-const authRoutes = require('./routes/auth');
 const dotenv = require("dotenv");
 const path = require("path");
 const multer = require('multer');
+const { graphqlHTTP } = require('express-graphql');
+const auth = require('./middlewares/auth');
 
 const app = express();
 
@@ -38,11 +38,56 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Authorization, Connection');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+
   next();
 });
 
-app.use('/feed', feedRoutes);
-app.use('/auth', authRoutes);
+app.use(auth);
+
+app.post('/post-image', async (req, res, next) => {
+  if (!req.userId) {
+    return res.status(401).json({
+      message: 'Not authorized'
+    });
+  }
+
+  if (!req.file) {
+    return res.status(400).json({
+      message: 'No file uploaded'
+    });
+  }
+
+  res.status(201).json({
+    message: 'File uploaded successfully',
+    imageUrl: req.file.path
+  });
+});
+
+app.use('/graphql', graphqlHTTP((req, res) => ({
+  schema: require('./graphql/schema'),
+  rootValue: require('./graphql/resolvers'),
+  graphiql: true,
+  customFormatErrorFn: error => {
+    if (!error.originalError) {
+      return error;
+    }
+
+    const message = error.message ?? 'An error occurred.';
+    const code = error.originalError.statusCode ?? 500;
+
+    res.status(code);
+
+    return {
+      message: message,
+      status: code
+    }
+
+  }
+})));
 
 app.use((req, res, next, err) => {
   console.error(err);
@@ -54,9 +99,7 @@ app.use((req, res, next, err) => {
 async function start() {
   await mongoose.connect(process.env.MONGODB_URL);
 
-  const server = app.listen(8080);
-
-  require('./util/socket').init(server);
+  app.listen(8080);
 }
 
 start()

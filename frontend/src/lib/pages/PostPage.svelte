@@ -6,6 +6,7 @@
   import Spinner from "../components/form/Spinner.svelte";
   import { get } from "svelte/store";
   import { token } from "../stores/auth-token.store";
+  import { push } from "svelte-spa-router";
 
   export let params: Record<string, string> = {}
 
@@ -14,28 +15,51 @@
 
   $: postId = params?.postId ?? null
 
-  $: formattedDate = post ? new Date(post.createdAt).toLocaleDateString() : 'Unknown';
+  $: formattedDate = post ? new Date(+post.createdAt).toLocaleDateString() : 'Unknown';
   $: imageSrc = config.backend_url + '/' + post?.imageUrl ?? '';
 
   async function loadPost() {
     isLoading = true;
     try {
-      const postsResponse = await fetch(config.backend_url + '/feed/posts/' + postId, {
-        headers: {
-          'Authorization': 'Bearer ' + get(token)
+      const graphqlQuery = `
+        query GetPost($postId: ID!) {
+          post(id: $postId) {
+            title
+            content
+            imageUrl
+            createdAt,
+            creator {
+              name
+            }
+          }
         }
+      `;
+
+      const postsResponse = await fetch(config.backend_url + '/graphql', {
+        headers: {
+          'Authorization': 'Bearer ' + get(token),
+          'Content-Type': 'application/json'
+        },
+        method: 'POST',
+        body: JSON.stringify({
+          query: graphqlQuery,
+          variables: {
+            postId: postId
+          }
+        })
       });
 
       if (postsResponse.status !== 200) {
         throw new Error('Error loading post');
       }
 
-      const postsObh = await postsResponse.json();
+      const postsObJ = await postsResponse.json();
 
-      post = postsObh['post'];
+      post = postsObJ['data']['post'];
     } catch (error) {
       showAlert('error', 'Error loading post');
       console.error(error);
+      await push('/');
     }
     isLoading = false;
   }

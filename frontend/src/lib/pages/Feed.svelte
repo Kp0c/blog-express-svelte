@@ -1,32 +1,53 @@
 <script lang="ts">
   import { config } from '../../configs/config.js';
-  import { onDestroy, onMount } from "svelte";
+  import { onMount } from "svelte";
   import { showAlert } from "../stores/alerts.store.js";
   import NewPost from "../modals/EditPost.svelte";
   import { openModal } from "svelte-modals";
   import Button from "../components/form/Button.svelte";
   import Spinner from "../components/form/Spinner.svelte";
   import Post from "../components/Post.svelte";
-  import { addPost, deletePost, posts, replacePost, setPosts } from "../stores/posts.store";
+  import { posts, setPosts } from "../stores/posts.store";
   import Pagination from "../components/Pagination.svelte";
   import { get } from "svelte/store";
   import { token } from "../stores/auth-token.store";
   import { push } from "svelte-spa-router";
   import Status from "../components/Status.svelte";
-  import openSocket, { Socket } from 'socket.io-client';
 
   let isLoading = false;
   let page = 1;
   let totalPages = 1;
-  let socket: Socket;
 
   async function loadPosts() {
     isLoading = true;
     try {
-      const postsResponse = await fetch(config.backend_url + '/feed/posts?page=' + page, {
-        headers: {
-          Authorization: 'Bearer ' + get(token)
+      const graphqlQuery = `
+      query FetchPosts($page: Int!) {
+        posts(page: $page) {
+          posts {
+            _id
+            title
+            creator {
+              _id
+              name
+            }
+            content
+            createdAt
+          }
+          totalPages
         }
+      }`;
+
+      const postsResponse = await fetch(config.backend_url + '/graphql', {
+        headers: {
+          Authorization: 'Bearer ' + get(token),
+          'Content-Type': 'application/json'
+        },
+        method: 'POST',
+        body: JSON.stringify({
+          query: graphqlQuery,
+          variables: { page }
+        })
       });
 
       if (postsResponse.status !== 200) {
@@ -35,8 +56,8 @@
 
       const postsObj = await postsResponse.json();
 
-      setPosts(postsObj['posts']);
-      totalPages = postsObj['totalPages'];
+      setPosts(postsObj.data['posts']['posts']);
+      totalPages = postsObj.data['posts']['totalPages'];
     } catch (error) {
       showAlert('error', 'Error loading posts');
       console.error(error);
@@ -59,23 +80,7 @@
       push('/login');
     } else {
       loadPosts();
-
-      socket = openSocket(config.backend_url)
-
-      socket.on('posts', ({action, post}) => {
-        if (action === 'create') {
-          addPost(post);
-        } else if (action === 'update') {
-          replacePost(post);
-        } else if (action === 'delete') {
-          deletePost(post._id)
-        }
-      });
     }
-  });
-
-  onDestroy(() => {
-    socket?.disconnect();
   });
 </script>
 

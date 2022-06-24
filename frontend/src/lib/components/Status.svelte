@@ -11,13 +11,27 @@
 
   async function loadStatus() {
     try {
-      const response = await fetch(config.backend_url + '/feed/status', {
-        headers: {
-          'Authorization': 'Bearer ' + get(token)
+      const graphqlQuery = `
+        query {
+          status
         }
+      `;
+
+      const response = await fetch(config.backend_url + '/graphql', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + get(token),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ query: graphqlQuery })
       });
       const data = await response.json();
-      status = data.status;
+
+      if (response.status === 200) {
+        status = data.data.status;
+      } else {
+        showAlert('error', 'Error loading status');
+      }
     } catch (error) {
       console.error(error);
     }
@@ -25,24 +39,31 @@
 
   async function updateStatus() {
     try {
-      const response = await fetch(config.backend_url + '/feed/status', {
-        method: 'PUT',
+      const graphqlQuery = `
+        mutation UpdateStatus($status: String!) {
+          updateStatus(status: $status)
+        }
+      `;
+
+      const response = await fetch(config.backend_url + '/graphql', {
+        method: 'POST',
         headers: {
           'Authorization': 'Bearer ' + get(token),
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          status: status
+          query: graphqlQuery,
+          variables: { status: status }
         })
       });
       const data = await response.json();
 
       if (response.status === 200) {
         showAlert('success', 'Status updated successfully');
-        status = data.status;
+        status = data.data['updateStatus'];
       } else {
         console.error(data);
-        showAlert('error', data.message);
+        showAlert('error', data.errors[0].message);
       }
     } catch (error) {
       console.error(error);
